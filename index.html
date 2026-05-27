@@ -1001,7 +1001,7 @@ body {
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn-excel" onclick="document.getElementById('file-excel').click()">
+      <button class="btn-excel" id="btn-cargar-excel" onclick="document.getElementById('file-excel').click()">
         <i class="fa-solid fa-file-upload"></i>
         Cargar Excel
       </button>
@@ -1175,8 +1175,7 @@ function cargarExcel(event) {
         populateUnidades();
       }
       renderBoard();
-      btn.innerHTML = '<i class="fa-solid fa-check"></i> Cargado';
-      setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-file-excel"></i> Cargar Excel'; btn.disabled = false; }, 2000);
+      document.getElementById("btn-cargar-excel").style.display = "none";
     } catch (err) { alert("Error al leer el archivo: " + err.message); btn.innerHTML = '<i class="fa-solid fa-file-excel"></i> Cargar Excel'; btn.disabled = false; }
   };
   reader.readAsArrayBuffer(file);
@@ -1214,8 +1213,11 @@ function autoLoadExcel() {
         populateUnidades();
       }
       renderBoard();
+      document.getElementById("btn-cargar-excel").style.display = "none";
     })
-    .catch(() => {});
+    .catch(() => {
+      document.getElementById("btn-cargar-excel").style.display = "";
+    });
 }
 
 function init() {
