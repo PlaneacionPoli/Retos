@@ -1812,7 +1812,7 @@ async function exportExcel() {
           g.retoMap.forEach((r, k) => {
             const retoKey = k + "|" + (r.DesarrolloSostenible || "");
             if (!mergedRetoMap.has(retoKey)) {
-              mergedRetoMap.set(retoKey, Object.assign({}, r, { Reto: "Desarrollo Sostenible - " + (r.DesarrolloSostenible || "") }));
+          mergedRetoMap.set(retoKey, Object.assign({}, r, { Reto: (r.DesarrolloSostenible || "") + " — " + r.Reto }));
             }
           });
         });
@@ -3117,7 +3117,7 @@ function renderDesgloseRetos() {
       g.retoMap.forEach((r, k) => {
         const retoKey = k + "|" + (r.DesarrolloSostenible || "");
         if (!mergedRetoMap.has(retoKey)) {
-          mergedRetoMap.set(retoKey, Object.assign({}, r, { Reto: "Desarrollo Sostenible - " + (r.DesarrolloSostenible || "") }));
+          mergedRetoMap.set(retoKey, Object.assign({}, r, { Reto: (r.DesarrolloSostenible || "") + " — " + r.Reto }));
         }
       });
     });
