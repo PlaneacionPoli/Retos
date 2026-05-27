@@ -1798,8 +1798,26 @@ async function exportExcel() {
       });
 
       const orderedLineas = [];
-      LINEAS.forEach(l => { if (lineaGroups.has(l.key)) orderedLineas.push({ def: l, grupo: lineaGroups.get(l.key) }); });
-      LINEA_DESARROLLO_SOSTENIBLE.subgroups.forEach(sg => { if (lineaGroups.has(sg.key)) orderedLineas.push({ def: sg, grupo: lineaGroups.get(sg.key) }); });
+      LINEAS.forEach(l => {
+        if (l.dsGroup) return;
+        if (lineaGroups.has(l.key)) orderedLineas.push({ def: l, grupo: lineaGroups.get(l.key) });
+      });
+      const dsSubGroups = [];
+      LINEA_DESARROLLO_SOSTENIBLE.subgroups.forEach(sg => {
+        if (lineaGroups.has(sg.key)) dsSubGroups.push(lineaGroups.get(sg.key));
+      });
+      if (dsSubGroups.length > 0) {
+        const mergedRetoMap = new Map();
+        dsSubGroups.forEach(g => {
+          g.retoMap.forEach((r, k) => {
+            const retoKey = k + "|" + (r.DesarrolloSostenible || "");
+            if (!mergedRetoMap.has(retoKey)) {
+              mergedRetoMap.set(retoKey, Object.assign({}, r, { Reto: "Desarrollo Sostenible - " + (r.DesarrolloSostenible || "") }));
+            }
+          });
+        });
+        orderedLineas.push({ def: LINEA_DESARROLLO_SOSTENIBLE, grupo: { lineaKey: "Desarrollo Sostenible", retoMap: mergedRetoMap } });
+      }
 
       let retoIdx = 0;
       orderedLineas.forEach(({ def: lineaDef, grupo }) => {
@@ -1822,12 +1840,15 @@ async function exportExcel() {
 
         const retos = [...grupo.retoMap.values()];
         retos.forEach(r => {
-          r.activities.sort((a, b) => {
-            if (!a.firstDate && !b.firstDate) return 0;
-            if (!a.firstDate) return 1;
-            if (!b.firstDate) return -1;
-            return a.firstDate - b.firstDate;
-          });
+      r.activities.sort((a, b) => {
+        const A = (a.Descripcion || "").includes("Implementación de la IA");
+        const B = (b.Descripcion || "").includes("Implementación de la IA");
+        if (A !== B) return A ? 1 : -1;
+        if (!a.firstDate && !b.firstDate) return 0;
+        if (!a.firstDate) return 1;
+        if (!b.firstDate) return -1;
+        return a.firstDate - b.firstDate;
+      });
           retoIdx++;
           let retoFirst = null, retoLast = null;
           r.activities.forEach(a => {
@@ -3082,11 +3103,26 @@ function renderDesgloseRetos() {
   // Ordenar líneas según el orden canónico
   const orderedLineas = [];
   LINEAS.forEach(l => {
+    if (l.dsGroup) return; // DS subgroups merged below
     if (lineaGroups.has(l.key)) orderedLineas.push({ def: l, grupo: lineaGroups.get(l.key) });
   });
+  // Merge DS subgroups into single "Desarrollo Sostenible" line
+  const dsSubGroups = [];
   LINEA_DESARROLLO_SOSTENIBLE.subgroups.forEach(sg => {
-    if (lineaGroups.has(sg.key)) orderedLineas.push({ def: sg, grupo: lineaGroups.get(sg.key) });
+    if (lineaGroups.has(sg.key)) dsSubGroups.push(lineaGroups.get(sg.key));
   });
+  if (dsSubGroups.length > 0) {
+    const mergedRetoMap = new Map();
+    dsSubGroups.forEach(g => {
+      g.retoMap.forEach((r, k) => {
+        const retoKey = k + "|" + (r.DesarrolloSostenible || "");
+        if (!mergedRetoMap.has(retoKey)) {
+          mergedRetoMap.set(retoKey, Object.assign({}, r, { Reto: "Desarrollo Sostenible - " + (r.DesarrolloSostenible || "") }));
+        }
+      });
+    });
+    orderedLineas.push({ def: LINEA_DESARROLLO_SOSTENIBLE, grupo: { lineaKey: "Desarrollo Sostenible", retoMap: mergedRetoMap } });
+  }
 
   const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
@@ -3128,6 +3164,9 @@ function renderDesgloseRetos() {
     retos.forEach(r => {
       // Ordenar actividades por fecha de inicio ascendente
       r.activities.sort((a, b) => {
+        const A = (a.Descripcion || "").includes("Implementación de la IA");
+        const B = (b.Descripcion || "").includes("Implementación de la IA");
+        if (A !== B) return A ? 1 : -1;
         if (!a.firstDate && !b.firstDate) return 0;
         if (!a.firstDate) return 1;
         if (!b.firstDate) return -1;
