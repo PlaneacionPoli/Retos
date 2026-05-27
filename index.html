@@ -958,11 +958,11 @@ body {
 }
 
 .reto-group-row td {
-  background: #FFF0F5 !important;
-  border-bottom: 2px solid #FF0073 !important;
+  background: color-mix(in srgb, var(--line-color) 8%, white) !important;
+  border-bottom: 2px solid var(--line-color) !important;
 }
 .reto-group-row:hover td {
-  background: #FFE4ED !important;
+  background: color-mix(in srgb, var(--line-color) 14%, #f5f5f5) !important;
 }
 
 .linea-section-row td {
@@ -1818,7 +1818,7 @@ async function exportExcel() {
         ws.mergeCells(currentRow, 1, currentRow, 6);
         const lhCell = ws.getCell(currentRow, 1);
         const totalActs = [...grupo.retoMap.values()].reduce((s, r) => s + r.activities.length, 0);
-        lhCell.value = `${lineaDef.key}  (${grupo.retoMap.size} retos · ${totalActs} activ.)`;
+        lhCell.value = `${lineaDef.dsGroup ? lineaDef.dsGroup + " - " + lineaDef.key : lineaDef.key}  (${grupo.retoMap.size} retos · ${totalActs} activ.)`;
         lhCell.font = { size: 11, bold: true, color: { argb: "FFFFFFFF" } };
         lhCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: hexArgb(lineaDef.color) } };
         lhCell.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
@@ -2469,7 +2469,7 @@ function exportPDF() {
   .pdf-desglose-wrap .desglose-table tbody td { padding: 2px 4px; }
   .pdf-desglose-wrap .desglose-table .col-fecha { white-space: nowrap; }
   .pdf-desglose-wrap .gantt-cell { min-width: 0 !important; padding: 2px 4px !important; }
-  .pdf-desglose-wrap .reto-group-row td { background: #FFF0F5 !important; }
+  .pdf-desglose-wrap .reto-group-row td { background: color-mix(in srgb, var(--line-color) 8%, white) !important; }
   .pdf-footer {
     text-align: center;
     font-size: 7pt;
@@ -3131,7 +3131,8 @@ function renderDesgloseRetos() {
   orderedLineas.forEach(({ def: lineaDef, grupo }) => {
     const gradient = lineaDef.gradient;
     const icon = lineaDef.icon;
-    const defLabel = lineaDef.key;
+    const defLabel = lineaDef.dsGroup ? lineaDef.dsGroup + " - " + lineaDef.key : lineaDef.key;
+    const lineColor = lineaDef.color;
 
     // ── Fila cabecera de Línea PDI ──
     const totalActividades = [...grupo.retoMap.values()].reduce((s, r) => s + r.activities.length, 0);
@@ -3179,7 +3180,7 @@ function renderDesgloseRetos() {
         }
       }
 
-      html += `<tr class="reto-group-row">
+      html += `<tr class="reto-group-row" style="--line-color:${lineColor}">
         <td style="text-align:center;font-weight:700">${retoCounter}</td>
         <td style="font-size:11.5px;color:var(--text-secondary)">${escHtml(r["Objetivo PDI"] || "")}</td>
         <td class="col-reto"><strong>${escHtml(r.Reto)}</strong></td>
