@@ -1798,26 +1798,19 @@ async function exportExcel() {
       });
 
       const orderedLineas = [];
+      const addedLineaKeys = new Set();
       LINEAS.forEach(l => {
-        if (l.dsGroup) return;
-        if (lineaGroups.has(l.key)) orderedLineas.push({ def: l, grupo: lineaGroups.get(l.key) });
+        if (lineaGroups.has(l.key) && !addedLineaKeys.has(l.key)) {
+          orderedLineas.push({ def: l, grupo: lineaGroups.get(l.key) });
+          addedLineaKeys.add(l.key);
+        }
       });
-      const dsSubGroups = [];
       LINEA_DESARROLLO_SOSTENIBLE.subgroups.forEach(sg => {
-        if (lineaGroups.has(sg.key)) dsSubGroups.push(lineaGroups.get(sg.key));
+        if (lineaGroups.has(sg.key) && !addedLineaKeys.has(sg.key)) {
+          orderedLineas.push({ def: sg, grupo: lineaGroups.get(sg.key) });
+          addedLineaKeys.add(sg.key);
+        }
       });
-      if (dsSubGroups.length > 0) {
-        const mergedRetoMap = new Map();
-        dsSubGroups.forEach(g => {
-          g.retoMap.forEach((r, k) => {
-            const retoKey = k + "|" + (r.DesarrolloSostenible || "");
-            if (!mergedRetoMap.has(retoKey)) {
-          mergedRetoMap.set(retoKey, Object.assign({}, r, { Reto: (r.DesarrolloSostenible || "") + " — " + r.Reto }));
-            }
-          });
-        });
-        orderedLineas.push({ def: LINEA_DESARROLLO_SOSTENIBLE, grupo: { lineaKey: "Desarrollo Sostenible", retoMap: mergedRetoMap } });
-      }
 
       let retoIdx = 0;
       orderedLineas.forEach(({ def: lineaDef, grupo }) => {
@@ -3102,27 +3095,19 @@ function renderDesgloseRetos() {
 
   // Ordenar líneas según el orden canónico
   const orderedLineas = [];
+  const addedLineaKeys = new Set();
   LINEAS.forEach(l => {
-    if (l.dsGroup) return; // DS subgroups merged below
-    if (lineaGroups.has(l.key)) orderedLineas.push({ def: l, grupo: lineaGroups.get(l.key) });
+    if (lineaGroups.has(l.key) && !addedLineaKeys.has(l.key)) {
+      orderedLineas.push({ def: l, grupo: lineaGroups.get(l.key) });
+      addedLineaKeys.add(l.key);
+    }
   });
-  // Merge DS subgroups into single "Desarrollo Sostenible" line
-  const dsSubGroups = [];
   LINEA_DESARROLLO_SOSTENIBLE.subgroups.forEach(sg => {
-    if (lineaGroups.has(sg.key)) dsSubGroups.push(lineaGroups.get(sg.key));
+    if (lineaGroups.has(sg.key) && !addedLineaKeys.has(sg.key)) {
+      orderedLineas.push({ def: sg, grupo: lineaGroups.get(sg.key) });
+      addedLineaKeys.add(sg.key);
+    }
   });
-  if (dsSubGroups.length > 0) {
-    const mergedRetoMap = new Map();
-    dsSubGroups.forEach(g => {
-      g.retoMap.forEach((r, k) => {
-        const retoKey = k + "|" + (r.DesarrolloSostenible || "");
-        if (!mergedRetoMap.has(retoKey)) {
-          mergedRetoMap.set(retoKey, Object.assign({}, r, { Reto: (r.DesarrolloSostenible || "") + " — " + r.Reto }));
-        }
-      });
-    });
-    orderedLineas.push({ def: LINEA_DESARROLLO_SOSTENIBLE, grupo: { lineaKey: "Desarrollo Sostenible", retoMap: mergedRetoMap } });
-  }
 
   const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
