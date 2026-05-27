@@ -970,7 +970,7 @@ body {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.3px;
-  border-bottom: 2px solid rgba(0,0,0,0.08);
+  border-bottom: 2px solid rgba(0,0,0,0.08) !important;
   color: white;
 }
 
@@ -3136,8 +3136,8 @@ function renderDesgloseRetos() {
 
     // ── Fila cabecera de Línea PDI ──
     const totalActividades = [...grupo.retoMap.values()].reduce((s, r) => s + r.activities.length, 0);
-    html += `<tr class="linea-section-row" style="background:${gradient}">
-      <td colspan="6" style="padding:8px 12px;font-weight:700;font-size:13px">
+    html += `<tr class="linea-section-row">
+      <td colspan="6" style="padding:8px 12px;font-weight:700;font-size:13px;background:${gradient}">
         <i class="${icon}" style="margin-right:8px"></i> ${defLabel}
         <span style="opacity:0.7;font-weight:400;font-size:11px;margin-left:8px">
           ${grupo.retoMap.size} reto(s) · ${totalActividades} activ.
