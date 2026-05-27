@@ -1157,7 +1157,7 @@ function cargarExcel(event) {
         return {
           Unidad: r["Unidad"] || "", Area: r["Area"] || "", Proceso: r["Proceso"] || "", SubProceso: r["SubProceso"] || "",
           Lider: r["Lider"] || "", Reto: r["Reto"] || "", Descripcion: r["Descripcion"] || "",
-          EsProyecto: (String(r["EsProyecto"] || "").toUpperCase() === "VERDADERO"),
+          EsProyecto: r["EsProyecto"] === true || String(r["EsProyecto"] || "").toUpperCase() === "VERDADERO",
           Indicador: r["Indicador"] || "", Linea_VA: r["Linea_VA"] || "", Objetivo_VA: r["Objetivo_VA"] || "",
           Entregable: r["Entregable"] || "", "Linea PDI": lineaPDI, "Objetivo PDI": r["Objetivo PDI"] || "",
           DesarrolloSostenible: dsSub, LineaPDI: lineaPDI, LineaPDIKey: lineaPDIKey,
@@ -1197,7 +1197,7 @@ function autoLoadExcel() {
         return {
           Unidad: r["Unidad"] || "", Area: r["Area"] || "", Proceso: r["Proceso"] || "", SubProceso: r["SubProceso"] || "",
           Lider: r["Lider"] || "", Reto: r["Reto"] || "", Descripcion: r["Descripcion"] || "",
-          EsProyecto: (String(r["EsProyecto"] || "").toUpperCase() === "VERDADERO"),
+          EsProyecto: r["EsProyecto"] === true || String(r["EsProyecto"] || "").toUpperCase() === "VERDADERO",
           Indicador: r["Indicador"] || "", Linea_VA: r["Linea_VA"] || "", Objetivo_VA: r["Objetivo_VA"] || "",
           Entregable: r["Entregable"] || "", "Linea PDI": lineaPDI, "Objetivo PDI": r["Objetivo PDI"] || "",
           DesarrolloSostenible: dsSub, LineaPDI: lineaPDI, LineaPDIKey: lineaPDIKey,
@@ -1571,23 +1571,27 @@ function getUniqueRetos(data, lineaKey) {
     const entregable = (row.Entregable || "").trim();
     const entregableKey = entregable.toLowerCase().replace(/\s+/g, " ");
 
-    if (!indexByKey.has(key)) {
-      const merged = Object.assign({}, row, { EntregablesList: [] });
-      if (entregable) {
-        merged.EntregablesList.push(entregable);
-        entregablesSeenByKey.set(key, new Set([entregableKey]));
+      if (!indexByKey.has(key)) {
+        const merged = Object.assign({}, row, { EntregablesList: [] });
+        if (entregable) {
+          merged.EntregablesList.push(entregable);
+          entregablesSeenByKey.set(key, new Set([entregableKey]));
+        } else {
+          entregablesSeenByKey.set(key, new Set());
+        }
+        indexByKey.set(key, merged);
+        result.push(merged);
       } else {
-        entregablesSeenByKey.set(key, new Set());
+        const entry = indexByKey.get(key);
+        if (row.EsProyecto) entry.EsProyecto = true;
+        if (entregable) {
+          const seenSet = entregablesSeenByKey.get(key);
+          if (!seenSet.has(entregableKey)) {
+            seenSet.add(entregableKey);
+            entry.EntregablesList.push(entregable);
+          }
+        }
       }
-      indexByKey.set(key, merged);
-      result.push(merged);
-    } else if (entregable) {
-      const seenSet = entregablesSeenByKey.get(key);
-      if (!seenSet.has(entregableKey)) {
-        seenSet.add(entregableKey);
-        indexByKey.get(key).EntregablesList.push(entregable);
-      }
-    }
   }
   return result;
 }
